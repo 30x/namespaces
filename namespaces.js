@@ -46,7 +46,7 @@ function addCalculatedNamespaceProperties(req, map, selfURL) {
 }
 
 function getNamespace(req, res, id) {
-  lib.ifAllowedThen(req, res, null, '_resource', 'read', function() {
+  lib.ifAllowedThen(req, res, null, '_self', 'read', function() {
     var selfURL = makeSelfURL(req, id)
     var namespace = {isA: 'Namespace', name: req.url.split('/').slice(-1)[0]}
     addCalculatedNamespaceProperties(req, namespace, selfURL)
@@ -56,7 +56,7 @@ function getNamespace(req, res, id) {
 
 function deleteNamespace(req, res, id) {
   console.log('sending permissions delete')
-  lib.ifAllowedThen(req, res, null, '_resource', 'delete', function() {
+  lib.ifAllowedThen(req, res, null, '_self', 'delete', function() {
     lib.sendInternalRequest(req, res, `/permissions?/namespaces;${id}`, 'DELETE', null, function (clientRes) {
       if (clientRes.statusCode == 404)
         lib.notFound(req, res)
