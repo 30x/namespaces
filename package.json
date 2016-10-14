@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/30x/namespaces#readme",
   "dependencies": {
-    "http-helper-functions": "0.0.26"
+    "http-helper-functions": "0.0.39",
+    "permissions-helper-functions": "0.0.4"
   }
 }
