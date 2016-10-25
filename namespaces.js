@@ -28,21 +28,9 @@ function createNamespace(req, res, ns) {
       if (permissions !== undefined)
         delete ns.permissions
       var selfURL = makeSelfURL(req, ns.name)
-      pLib.createPermissionsFor(req.headers, selfURL, permissions, function(err, permissionsURL, permissions){
-        if (err == 401)
-          lib.forbidden(req, res)
-        else if (err == 400)
-          lib.badRequest(res, permissionsURL)
-        else if (err == 500)
-          lib.internalError(res, permissionsURL)
-        else if (err == 403)
-          lib.forbidden(req, res)
-        else if (err == 409)
-          lib.duplicate(res, `${ns} namespace already exists`)
-        else {
-          addCalculatedNamespaceProperties(req, ns, selfURL)
-          lib.created(req, res, ns, selfURL)
-        }
+      pLib.createPermissionsThen(req, res, selfURL, permissions, function(err, permissionsURL, permissions){
+        addCalculatedNamespaceProperties(req, ns, selfURL)
+        lib.created(req, res, ns, selfURL)
       })
       // We are not going to store any information about a namespace, since we can recover its name from its permissions document 
     }
@@ -55,7 +43,7 @@ function makeSelfURL(req, key) {
 
 function addCalculatedNamespaceProperties(req, map, selfURL) {
   map.self = selfURL
-  map._permissions = `protocol://authority/permissions?${map.self}`
+  map._permissions = `scheme://authority/permissions?${map.self}`
 }
 
 function getNamespace(req, res, id) {
@@ -69,10 +57,8 @@ function getNamespace(req, res, id) {
 
 function deleteNamespace(req, res, id) {
   lib.ifAllowedThen(req, res, null, '_self', 'delete', function() {
-    lib.sendInternalRequest(req.headers, `/permissions?/namespaces;${id}`, 'DELETE', null, function (err, clientRes) {
-      if (err)
-        lib.internalError(res, err)
-      else if (clientRes.statusCode == 404)
+    lib.sendInternalRequestThen(req, res, `/permissions?/namespaces;${id}`, 'DELETE', null, function (clientRes) {
+      if (clientRes.statusCode == 404)
         lib.notFound(req, res)
       else if (clientRes.statusCode == 200){
         var selfURL = makeSelfURL(req, id)
